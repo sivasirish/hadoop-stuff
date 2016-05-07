@@ -130,7 +130,7 @@
                     "Resource" : "*"
                 }]
             },
-            "Roles" : [ { "Ref" : "AmbariAccessRole" },  ]
+            "Roles" : [ { "Ref" : "AmbariAccessRole" }  ]
         }
     },
 
