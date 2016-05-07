@@ -79,7 +79,7 @@
       "sa-east-1"          : { "AMI" : "ami-995ce884" },
       "us-east-1"          : { "AMI" : "ami-aed06ac6" },
       "us-west-1"          : { "AMI" : "ami-69ccd92c" },
-      "us-west-2"          : { "AMI" : "ami-5fbcf36f" }
+      "us-west-2"          : { "AMI" : "ami-775e4f16" }
     },
 
     "CENTOS6" : {
