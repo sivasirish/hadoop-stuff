@@ -119,7 +119,7 @@
 
   "Outputs" : {
     "ServerAddress" : {
-      "Value" : { "Fn::GetAtt" : [ "Server", "PublicDnsName" ] },
+      "Value" : { "Fn::GetAtt" : [ "DockerServer", "PublicDnsName" ] },
       "Description" : "Server Domain Name"
     },
     "SecurityGroup" : {
