@@ -90,9 +90,6 @@
         "KeyName" : { "Ref" : "KeyName" },
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
           "#!/bin/sh\n",
-          "# Install Upgrades\n",
-          "apt-get -y upgrade\n",
-
           "# Install Docker\n",
                 "/usr/bin/curl -o /tmp/install-docker.sh https://get.docker.com/\n",
                 "sudo chmod +x /tmp/install-docker.sh\n",
