@@ -86,7 +86,7 @@
         "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, 
           { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
         "InstanceType" : { "Ref" : "InstanceType" },
-        "SecurityGroups" : [ { "Ref" : "ServerSecurityGroup" } ],
+        "SecurityGroups" : [ { "Ref" : "DockerSecurityGroup" } ],
         "KeyName" : { "Ref" : "KeyName" },
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
           "#!/bin/sh\n",
@@ -110,7 +110,7 @@
       "Properties" : {
         "GroupDescription" : "Docker and Nexus Server Security Group",
         "SecurityGroupIngress" : [
-          { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp": {"Ref": "SSHLocation"}}
+          { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp": {"Ref": "SSHLocation"}},
           { "IpProtocol" : "tcp", "FromPort" : "8081", "ToPort" : "8081", "CidrIp" : "0.0.0.0/0"}
         ]
       }
@@ -123,7 +123,7 @@
       "Description" : "Server Domain Name"
     },
     "SecurityGroup" : {
-      "Value" : { "Fn::GetAtt" : [ "ServerSecurityGroup", "GroupId" ] },
+      "Value" : { "Fn::GetAtt" : [ "DockerSecurityGroup", "GroupId" ] },
       "Description" : "Server Security Group Id"
     }
   }
