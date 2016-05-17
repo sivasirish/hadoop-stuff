@@ -94,15 +94,7 @@
                 "/usr/bin/curl -o /tmp/install-docker.sh https://get.docker.com/\n",
                 "sudo chmod +x /tmp/install-docker.sh\n",
                 "sudo /tmp/install-docker.sh > /tmp/docker.log 2>&1\n",
-                "sudo docker run --detach \
-    --hostname gitlab.example.com \
-    --publish 443:443 --publish 80:80 --publish 22:22 \
-    --name gitlab \
-    --restart always \
-    --volume /srv/gitlab/config:/etc/gitlab \
-    --volume /srv/gitlab/logs:/var/log/gitlab \
-    --volume /srv/gitlab/data:/var/opt/gitlab \
-    gitlab/gitlab-ce:latest >> /tmp/docker.log 2>&1\n"
+                "sudo docker run --detach --hostname gitlab.example.com --publish 443:443 --publish 80:80 --publish 22:22 --name gitlab --restart always --volume /srv/gitlab/config:/etc/gitlab --volume /srv/gitlab/logs:/var/log/gitlab --volume /srv/gitlab/data:/var/opt/gitlab gitlab/gitlab-ce:latest >> /tmp/docker.log 2>&1\n"
           ]] }},
         "BlockDeviceMappings" : [ {
           "DeviceName" : "/dev/sda1",
@@ -116,8 +108,7 @@
         "GroupDescription" : "Docker and Nexus Server Security Group",
         "SecurityGroupIngress" : [
           { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp": {"Ref": "SSHLocation"}},
-          { "IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : "0.0.0.0/0"},
-          { "IpProtocol" : "tcp", "FromPort" : "443", "ToPort" : "443", "CidrIp" : "0.0.0.0/0"}
+          { "IpProtocol" : "tcp", "FromPort" : "8081", "ToPort" : "8081", "CidrIp" : "0.0.0.0/0"}
         ]
       }
     }
