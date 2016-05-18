@@ -1,0 +1,127 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "Run an Ubuntu 14.04 LTS server with Docker.",
+
+  "Parameters": {
+    "InstanceType" : {
+      "Description" : "EC2 instance type",
+      "Type" : "String",
+      "Default" : "t1.micro",
+      "AllowedValues" : [ "t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","m2.xlarge","m2.2xlarge",
+      "m2.4xlarge","m3.xlarge","m3.2xlarge","c1.medium","c1.xlarge","cc1.4xlarge","cc2.8xlarge","cg1.4xlarge",
+      "m3.medium", "m3.large", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "c3.large", 
+      "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge"
+      ],
+      "ConstraintDescription" : "must be a valid EC2 instance type"
+    },
+    "SSHLocation": {
+      "Description": " The IP address range that can be used to SSH to the EC2 instances",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "0.0.0.0/0",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+    "KeyName": {
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+    },
+    "EBSSize" : {
+      "Description" : "Size of EBS Drive (in Gigabytes)",
+      "Default" : "10",
+      "Type" : "Number",
+      "MinValue": "8"
+    }
+  },
+
+  "Mappings" : {
+    "AWSInstanceType2Arch" : {
+      "t1.micro"    : { "Arch" : "64" },
+      "m1.small"    : { "Arch" : "64" },
+      "m1.medium"   : { "Arch" : "64" },
+      "m1.large"    : { "Arch" : "64" },
+      "m1.xlarge"   : { "Arch" : "64" },
+      "m2.xlarge"   : { "Arch" : "64" },
+      "m2.2xlarge"  : { "Arch" : "64" },
+      "m2.4xlarge"  : { "Arch" : "64" },
+      "m3.medium"   : { "Arch" : "64" },
+      "m3.large"    : { "Arch" : "64" },
+      "m3.xlarge"   : { "Arch" : "64" },
+      "m3.2xlarge"  : { "Arch" : "64" },
+      "r3.large"    : { "Arch" : "64HVM" },
+      "r3.xlarge"   : { "Arch" : "64HVM" },
+      "r3.2xlarge"  : { "Arch" : "64HVM" },
+      "r3.4xlarge"  : { "Arch" : "64HVM" },
+      "r3.8xlarge"  : { "Arch" : "64HVM" },
+      "c3.large"    : { "Arch" : "64" },
+      "c3.xlarge"   : { "Arch" : "64" },
+      "c3.2xlarge"  : { "Arch" : "64" },
+      "c3.4xlarge"  : { "Arch" : "64" },
+      "c3.8xlarge"  : { "Arch" : "64" },
+      "c1.medium"   : { "Arch" : "64" },
+      "c1.xlarge"   : { "Arch" : "64" },
+      "cc1.4xlarge" : { "Arch" : "64HVM" },
+      "cc2.8xlarge" : { "Arch" : "64HVM" },
+      "cg1.4xlarge" : { "Arch" : "64HVM" }
+    },
+
+    "AWSRegionArch2AMI" : {
+      "us-east-1"      : { "64" : "ami-408c7f28", "64HVM" : "ami-588c7f30" },
+      "us-west-2"      : { "64" : "ami-f34032c3", "64HVM" : "ami-d34032e3" },
+      "us-west-1"      : { "64" : "ami-a26265e7", "64HVM" : "ami-5a61661f" },
+      "eu-west-1"      : { "64" : "ami-cb4986bc", "64HVM" : "ami-25488752" },
+      "ap-southeast-1" : { "64" : "ami-506d3102", "64HVM" : "ami-426d3110" },
+      "ap-southeast-2" : { "64" : "ami-7bb8dd41", "64HVM" : "ami-77b8dd4d" },
+      "ap-northeast-1" : { "64" : "ami-19dd9218", "64HVM" : "ami-d5dd92d4" },
+      "sa-east-1"      : { "64" : "ami-8f0aa692", "64HVM" : "ami-850aa698" }
+    }
+  },
+
+  "Resources" : {
+      "DockerServer" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, 
+          { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "SecurityGroups" : [ { "Ref" : "DockerSecurityGroup" } ],
+        "KeyName" : { "Ref" : "KeyName" },
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+          "#!/bin/sh\n",
+          "# Install Docker\n",
+                "/usr/bin/curl -o /tmp/install-docker.sh https://get.docker.com/\n",
+                "sudo chmod +x /tmp/install-docker.sh\n",
+                "sudo /tmp/install-docker.sh > /tmp/docker.log 2>&1\n",
+                "sudo docker run -d --name mulesoft -p 8081:8081 -v /opt/mule/apps:/opt/mule/apps -v /opt/mule/log:/opt/mule/logs pwcdigital/mulesoft:latest >> /tmp/docker.log 2>&1\n"
+          ]] }},
+        "BlockDeviceMappings" : [ {
+          "DeviceName" : "/dev/sda1",
+          "Ebs" : { "VolumeSize" : { "Ref" : "EBSSize" } }
+        } ]
+      }
+    },
+    "DockerSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Docker and Nexus Server Security Group",
+        "SecurityGroupIngress" : [
+          { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp": {"Ref": "SSHLocation"}},
+          { "IpProtocol" : "tcp", "FromPort" : "8081", "ToPort" : "8081", "CidrIp" : "0.0.0.0/0"}
+        ]
+      }
+    }
+  },
+
+  "Outputs" : {
+    "ServerAddress" : {
+      "Value" : { "Fn::GetAtt" : [ "DockerServer", "PublicDnsName" ] },
+      "Description" : "Server Domain Name"
+    },
+    "SecurityGroup" : {
+      "Value" : { "Fn::GetAtt" : [ "DockerSecurityGroup", "GroupId" ] },
+      "Description" : "Server Security Group Id"
+    }
+  }
+}
