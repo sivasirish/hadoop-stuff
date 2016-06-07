@@ -94,7 +94,7 @@
                 "/usr/bin/curl -o /tmp/install-docker.sh https://get.docker.com/\n",
                 "sudo chmod +x /tmp/install-docker.sh\n",
                 "sudo /tmp/install-docker.sh > /tmp/docker.log 2>&1\n",
-                "sudo docker run -d --name mulesoft -p 8081:8081 -v /opt/mule/apps:/opt/mule/apps -v /opt/mule/log:/opt/mule/logs pwcdigital/mulesoft:latest >> /tmp/docker.log 2>&1\n"
+                "sudo docker run -d --name mulesoft -p 8081:8081 -v ~/myAppsDir:/opt/mule/apps -v ~/myLogsDir:/opt/mule/logs vromero/mule:latest >> /tmp/docker.log 2>&1\n"
           ]] }},
         "BlockDeviceMappings" : [ {
           "DeviceName" : "/dev/sda1",
