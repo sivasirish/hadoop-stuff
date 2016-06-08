@@ -1,0 +1,174 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Role: Renderer. Amazon CloudFormation Template",
+
+  "Parameters": {
+    "InstanceType" : {
+      "Description" : "EC2 instance type",
+      "Type" : "String",
+      "Default" : "t1.micro",
+      "AllowedValues" : [ "t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","m2.xlarge","m2.2xlarge",
+      "m2.4xlarge","m3.xlarge","m3.2xlarge","c1.medium","c1.xlarge","cc1.4xlarge","cc2.8xlarge","cg1.4xlarge",
+      "m3.medium", "m3.large", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "c3.large", 
+      "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge"
+      ],
+      "ConstraintDescription" : "must be a valid EC2 instance type"
+    },
+    "KeyName": {
+      "Description": "Name of an existing EC2 Keypair to enable access to the machine",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Default": "sw-production-east-va"
+    },
+    "ClusterSizeMin" : {
+      "Description" : "Number of Servers in a Cluster",
+      "Default" : "2",
+      "Type" : "Number",
+      "MinValue": "1"
+    },
+    "ClusterSizeMax" : {
+      "Description" : "Number of Servers in a Cluster",
+      "Default" : "10",
+      "Type" : "Number",
+      "MinValue": "2"
+    },
+    "ScaleUp": {
+      "Type" : "Number",
+      "Default": "1"
+    },
+    "ScaleDown": {
+      "Type" : "Number",
+      "Default": "-1"
+    }
+  },
+  
+    "Mappings" : {
+    "AWSInstanceType2Arch" : {
+      "t1.micro"    : { "Arch" : "64" },
+      "m1.small"    : { "Arch" : "64" },
+      "m1.medium"   : { "Arch" : "64" },
+      "m1.large"    : { "Arch" : "64" },
+      "m1.xlarge"   : { "Arch" : "64" },
+      "m2.xlarge"   : { "Arch" : "64" },
+      "m2.2xlarge"  : { "Arch" : "64" },
+      "m2.4xlarge"  : { "Arch" : "64" },
+      "m3.medium"   : { "Arch" : "64" },
+      "m3.large"    : { "Arch" : "64" },
+      "m3.xlarge"   : { "Arch" : "64" },
+      "m3.2xlarge"  : { "Arch" : "64" },
+      "r3.large"    : { "Arch" : "64HVM" },
+      "r3.xlarge"   : { "Arch" : "64HVM" },
+      "r3.2xlarge"  : { "Arch" : "64HVM" },
+      "r3.4xlarge"  : { "Arch" : "64HVM" },
+      "r3.8xlarge"  : { "Arch" : "64HVM" },
+      "c3.large"    : { "Arch" : "64" },
+      "c3.xlarge"   : { "Arch" : "64" },
+      "c3.2xlarge"  : { "Arch" : "64" },
+      "c3.4xlarge"  : { "Arch" : "64" },
+      "c3.8xlarge"  : { "Arch" : "64" },
+      "c1.medium"   : { "Arch" : "64" },
+      "c1.xlarge"   : { "Arch" : "64" },
+      "cc1.4xlarge" : { "Arch" : "64HVM" },
+      "cc2.8xlarge" : { "Arch" : "64HVM" },
+      "cg1.4xlarge" : { "Arch" : "64HVM" }
+    },
+
+    "AWSRegionArch2AMI" : {
+      "us-east-1"      : { "64" : "ami-408c7f28", "64HVM" : "ami-588c7f30" },
+      "us-west-2"      : { "64" : "ami-f34032c3", "64HVM" : "ami-d34032e3" },
+      "us-west-1"      : { "64" : "ami-a26265e7", "64HVM" : "ami-5a61661f" },
+      "eu-west-1"      : { "64" : "ami-cb4986bc", "64HVM" : "ami-25488752" },
+      "ap-southeast-1" : { "64" : "ami-506d3102", "64HVM" : "ami-426d3110" },
+      "ap-southeast-2" : { "64" : "ami-7bb8dd41", "64HVM" : "ami-77b8dd4d" },
+      "ap-northeast-1" : { "64" : "ami-19dd9218", "64HVM" : "ami-d5dd92d4" },
+      "sa-east-1"      : { "64" : "ami-8f0aa692", "64HVM" : "ami-850aa698" }
+    }
+  },
+
+  "Resources": {
+    "RendererServerGroup": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AvailabilityZones": { "Fn::GetAZs": "" },
+        "LaunchConfigurationName": { "Ref": "LaunchConfig" },
+        "MinSize": { "Ref": "ClusterSizeMin" },
+        "MaxSize": { "Ref": "ClusterSizeMax" },
+        "Tags": [
+          { "Key": "Environment", "Value": "Production", "PropagateAtLaunch": "true" },
+          { "Key": "Role", "Value": "renderer", "PropagateAtLaunch": "true" }
+        ]
+      }
+    },
+
+    "LaunchConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "KeyName": { "Ref": "KeyName" },
+        "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, 
+          { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
+        "SecurityGroups": [ { "Ref": "InstanceSecurityGroup" }],
+        "InstanceType": { "Ref": "InstanceType" }
+      }
+    },
+
+    "RendererServerScaleUpPolicy" : {
+      "Type" : "AWS::AutoScaling::ScalingPolicy",
+      "Properties" : {
+        "AdjustmentType" : "ChangeInCapacity",
+        "AutoScalingGroupName" : { "Ref" : "RendererServerGroup" },
+        "Cooldown" : "300",
+        "ScalingAdjustment" : { "Ref": "ScaleUp" }
+      }
+    },
+
+    "RendererServerScaleDownPolicy" : {
+      "Type" : "AWS::AutoScaling::ScalingPolicy",
+      "Properties" : {
+        "AdjustmentType" : "ChangeInCapacity",
+        "AutoScalingGroupName" : { "Ref" : "RendererServerGroup" },
+        "Cooldown" : "300",
+        "ScalingAdjustment" : { "Ref": "ScaleDown" }
+      }
+    },
+
+    "ScaleUpAlarm": {
+     "Type": "AWS::CloudWatch::Alarm",
+     "Properties": {
+        "AlarmDescription": "Hit it with a hammer",
+        "MetricName": "Prod-VideoRenderQueueLength",
+        "Namespace": "DatCompany",
+        "Statistic": "Average",
+        "Period": "30",
+        "EvaluationPeriods": "1",
+        "Threshold": "30",
+        "AlarmActions": [ { "Ref": "RendererServerScaleUpPolicy" } ],        
+        "ComparisonOperator": "GreaterThanThreshold"
+      }
+    },
+
+    "ScaleDownAlarm": {
+     "Type": "AWS::CloudWatch::Alarm",
+     "Properties": {
+        "AlarmDescription": "Simmer Down",
+        "MetricName": "Prod-VideoRenderQueueLength",
+        "Namespace": "DatCompany",
+        "Statistic": "Average",
+        "Period": "60",
+        "EvaluationPeriods": "5",
+        "Threshold": "30",
+        "AlarmActions": [ { "Ref": "RendererServerScaleDownPolicy" } ],
+        "ComparisonOperator": "LessThanThreshold"
+      }
+    },
+
+    "InstanceSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Enable SSH access to the configured server",
+        "SecurityGroupIngress" : [
+          { "IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "CidrIp": "0.0.0.0/0" }
+        ]
+      }
+    }
+  }
+}
