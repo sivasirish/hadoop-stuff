@@ -94,7 +94,7 @@
                 "/usr/bin/curl -o /tmp/install-docker.sh https://get.docker.com/\n",
                 "sudo chmod +x /tmp/install-docker.sh\n",
                 "sudo /tmp/install-docker.sh > /tmp/docker.log 2>&1\n",
-                "sudo docker run -p 8080:8080 -p 50000:50000 -v /your/home:/var/jenkins_home jenkins >> /tmp/docker.log 2>&1\n"
+                "sudo docker run -d --name jenkins -p 8080:8080 -p 50000:50000 jenkins >> /tmp/docker.log 2>&1\n"
           ]] }},
         "BlockDeviceMappings" : [ {
           "DeviceName" : "/dev/sda1",
