@@ -138,9 +138,9 @@
         "MetricName": "Prod-VideoRenderQueueLength",
         "Namespace": "DatCompany",
         "Statistic": "Average",
-        "Period": "30",
+        "Period": "60",
         "EvaluationPeriods": "1",
-        "Threshold": "30",
+        "Threshold": "60",
         "AlarmActions": [ { "Ref": "RendererServerScaleUpPolicy" } ],        
         "ComparisonOperator": "GreaterThanThreshold"
       }
