@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
-  "Description" : "Run an Ubuntu 14.04 LTS server with Docker.",
+  "Description" : "Run an AWS linux server with Docker.",
 
   "Parameters": {
     "InstanceType" : {
@@ -68,9 +68,9 @@
     },
 
     "AWSRegionArch2AMI" : {
-      "us-east-1"      : { "64" : "ami-408c7f28", "64HVM" : "ami-588c7f30" },
-      "us-west-2"      : { "64" : "ami-f34032c3", "64HVM" : "ami-d34032e3" },
-      "us-west-1"      : { "64" : "ami-a26265e7", "64HVM" : "ami-5a61661f" },
+      "us-east-1"      : { "64" : "ami-6869aa05", "64HVM" : "ami-6869aa05" },
+      "us-west-2"      : { "64" : "ami-7172b611", "64HVM" : "ami-7172b611" },
+      "us-west-1"      : { "64" : "ami-31490d51", "64HVM" : "ami-31490d51" },
       "eu-west-1"      : { "64" : "ami-cb4986bc", "64HVM" : "ami-25488752" },
       "ap-southeast-1" : { "64" : "ami-506d3102", "64HVM" : "ami-426d3110" },
       "ap-southeast-2" : { "64" : "ami-7bb8dd41", "64HVM" : "ami-77b8dd4d" },
